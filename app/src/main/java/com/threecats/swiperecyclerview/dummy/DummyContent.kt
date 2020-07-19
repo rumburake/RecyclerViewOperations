@@ -25,6 +25,11 @@ object DummyContent {
 
     init {
         // Add some sample items.
+        generate()
+    }
+
+    fun generate() {
+        ITEMS.clear()
         for (i in 1..COUNT) {
             addItem(createDummyItem(i))
         }
