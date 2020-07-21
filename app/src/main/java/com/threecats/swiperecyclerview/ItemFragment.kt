@@ -144,6 +144,33 @@ class ItemFragment : Fragment() {
                             )
                         }
                         trashIcon.draw(c)
+                    } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG){
+                        val height = viewHolder.itemView.height.toFloat()
+                        val move = if (abs(dY) > height) height else abs(dY)
+
+                        // set stage
+                        if (dY >= 0) { // downwards
+                            c.clipRect(
+                                0f,
+                                viewHolder.itemView.top.toFloat(),
+                                viewHolder.itemView.right.toFloat(),
+                                viewHolder.itemView.top.toFloat() + move
+                            )
+                        } else { // upwards
+                            c.clipRect(
+                                0f,
+                                viewHolder.itemView.bottom.toFloat() - move,
+                                viewHolder.itemView.right.toFloat(),
+                                viewHolder.itemView.bottom.toFloat()
+                            )
+                        }
+
+                        // gradual color (although is distracting here)
+                        val colorBase = if (dY >= 0) Color.YELLOW else Color.GREEN
+                        val color = ArgbEvaluator().evaluate(move / height, Color.GRAY, colorBase) as Int
+                        c.drawColor(color)
+
+//                        c.drawColor(Color.LTGRAY)
                     }
                 }
             }
