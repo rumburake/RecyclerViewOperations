@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.threecats.swiperecyclerview.dummy.DummyContent
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -54,7 +55,21 @@ class ItemFragment : Fragment() {
                     recyclerView: RecyclerView,
                     viewHolder: RecyclerView.ViewHolder,
                     target: RecyclerView.ViewHolder
-                ): Boolean = false
+                ): Boolean {
+                    val start = viewHolder.adapterPosition
+                    val end = target.adapterPosition
+                    if (start < end) {
+                        for (i in start until end) {
+                            Collections.swap(DummyContent.ITEMS, i, i + 1)
+                        }
+                    } else {
+                        for (i in start downTo end + 1) {
+                            Collections.swap(DummyContent.ITEMS, i, i - 1)
+                        }
+                    }
+                    adapter?.notifyItemMoved(start, end)
+                    return true
+                }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     DummyContent.ITEMS.removeAt(viewHolder.adapterPosition)
