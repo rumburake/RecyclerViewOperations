@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.threecats.swiperecyclerview.dummy.DummyContent
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -47,7 +48,8 @@ class ItemFragment : Fragment() {
             }
             adapter = MyItemRecyclerViewAdapter(DummyContent.ITEMS)
 
-            val myCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            val myCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.START or ItemTouchHelper.END) {
+
                 override fun onMove(
                     recyclerView: RecyclerView,
                     viewHolder: RecyclerView.ViewHolder,
@@ -77,25 +79,57 @@ class ItemFragment : Fragment() {
                         actionState,
                         isCurrentlyActive
                     )
-                    c.clipRect(0f, viewHolder.itemView.top.toFloat(), dX, viewHolder.itemView.bottom.toFloat())
-                    val width = viewHolder.itemView.width.toFloat()
-                    val limit = width * 0.7f
-                    val color = if (dX >= limit) {
-                        Color.RED
-                    } else {
-                        ArgbEvaluator().evaluate(dX / limit, Color.GRAY, Color.RED) as Int
-                    }
-                    c.drawColor(color)
+                    if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                        val width = viewHolder.itemView.width.toFloat()
+                        val threshold = width * 0.7f
+                        val move = abs(dX)
 
-                    val trashIcon = resources.getDrawable(R.drawable.ic_baseline_delete_24, null)
-                    val margin = resources.getDimension(R.dimen.text_margin).roundToInt()
-                    trashIcon.bounds = Rect(
-                        margin,
-                        margin + viewHolder.itemView.top,
-                        margin + trashIcon.intrinsicWidth,
-                        margin + viewHolder.itemView.top + trashIcon.intrinsicHeight
-                    )
-                    trashIcon.draw(c)
+                        // set stage
+                        if (dX >= 0) { // left to right
+                            c.clipRect(
+                                0f,
+                                viewHolder.itemView.top.toFloat(),
+                                dX,
+                                viewHolder.itemView.bottom.toFloat()
+                            )
+                        } else { // right to left
+                            c.clipRect(
+                                viewHolder.itemView.right.toFloat() - move,
+                                viewHolder.itemView.top.toFloat(),
+                                viewHolder.itemView.right.toFloat(),
+                                viewHolder.itemView.bottom.toFloat()
+                            )
+                        }
+
+                        // gradual color
+                        val colorBase = if (dX >= 0) Color.RED else Color.BLUE
+                        val color = if (move >= threshold) {
+                            colorBase
+                        } else {
+                            ArgbEvaluator().evaluate(move / threshold, Color.GRAY, colorBase) as Int
+                        }
+                        c.drawColor(color)
+
+                        val trashIcon = resources.getDrawable(R.drawable.ic_baseline_delete_24, null)
+                        val margin = resources.getDimension(R.dimen.text_margin).roundToInt()
+
+                        trashIcon.bounds = if (dX >= 0) {
+                            Rect(
+                                margin,
+                                margin + viewHolder.itemView.top,
+                                margin + trashIcon.intrinsicWidth,
+                                margin + viewHolder.itemView.top + trashIcon.intrinsicHeight
+                            )
+                        } else {
+                            Rect(
+                                viewHolder.itemView.right - margin - trashIcon.intrinsicWidth,
+                                viewHolder.itemView.top + margin,
+                                viewHolder.itemView.right - margin,
+                                viewHolder.itemView.top + margin + trashIcon.intrinsicHeight
+                            )
+                        }
+                        trashIcon.draw(c)
+                    }
                 }
             }
 
