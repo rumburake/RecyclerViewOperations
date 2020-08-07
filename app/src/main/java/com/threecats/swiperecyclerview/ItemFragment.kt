@@ -52,7 +52,25 @@ class ItemFragment : Fragment() {
 
             val stopwatch = Stopwatch()
 
+            var dragInitialPosition = RecyclerView.NO_POSITION
+
             val myCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.START or ItemTouchHelper.END) {
+
+                override fun clearView(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder
+                ) {
+                    super.clearView(recyclerView, viewHolder)
+                    if (dragInitialPosition != RecyclerView.NO_POSITION) {
+                        val dragFinalPosition = viewHolder.adapterPosition
+                        if (dragFinalPosition != dragInitialPosition) {
+                            Log.d("Drag", "Done dragging. Moved from: $dragInitialPosition to $dragFinalPosition.")
+                        } else {
+                            Log.d("Drag", "Done dragging. Item not moved.")
+                        }
+                        dragInitialPosition = RecyclerView.NO_POSITION
+                    }
+                }
 
                 override fun onMove(
                     recyclerView: RecyclerView,
@@ -61,6 +79,11 @@ class ItemFragment : Fragment() {
                 ): Boolean {
                     val start = viewHolder.adapterPosition
                     val end = target.adapterPosition
+
+                    if (dragInitialPosition == RecyclerView.NO_POSITION) {
+                        dragInitialPosition = start
+                    }
+
                     if (start < end) {
                         for (i in start until end) {
                             Collections.swap(DummyContent.ITEMS, i, i + 1)
@@ -71,7 +94,7 @@ class ItemFragment : Fragment() {
                         }
                     }
                     adapter?.notifyItemMoved(start, end)
-                    // Thread.sleep(500)
+                    // Thread.sleep(50)
                     Log.d("stopwatch", "Since last: ${stopwatch.lapMs()}")
                     return true
                 }
