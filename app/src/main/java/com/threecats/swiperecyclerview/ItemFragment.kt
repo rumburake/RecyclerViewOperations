@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,6 +50,8 @@ class ItemFragment : Fragment() {
             }
             adapter = MyItemRecyclerViewAdapter(DummyContent.ITEMS)
 
+            val stopwatch = Stopwatch()
+
             val myCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.START or ItemTouchHelper.END) {
 
                 override fun onMove(
@@ -68,6 +71,8 @@ class ItemFragment : Fragment() {
                         }
                     }
                     adapter?.notifyItemMoved(start, end)
+                    // Thread.sleep(500)
+                    Log.d("stopwatch", "Since last: ${stopwatch.lapMs()}")
                     return true
                 }
 
